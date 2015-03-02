@@ -1,5 +1,19 @@
 # SantanderRioFetcher
 
+## Ussage
+
+    <jarname> [options]
+  
+    -d <dni used in the login> *
+    -p <password in numbers>   *
+    -u <the username>          *
+  
+    -f <list invests>         
+    -m <list last moves>     **
+    
+    * obligatory
+    ** default
+
 ## JAR generation
 
     mvn package
