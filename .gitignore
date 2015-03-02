@@ -1,1 +1,8 @@
 /bin/
+
+## Intellij IDEA
+*.iml
+.idea/
+
+## Maven
+target/
