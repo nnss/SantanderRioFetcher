@@ -23,3 +23,9 @@
     mvn package  -Pbundle
 
 The generated jar is left at target/SantanderRioFetcher-jar-with-dependencies.jar
+
+
+# TODO
+
+implement YML to keep de configuration (using CMD arguments is quite disgusting)
+
