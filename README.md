@@ -1,18 +1,27 @@
 # SantanderRioFetcher
 
-## Ussage
+## Usage
 
-    <jarname> [options]
+    <jar name> [options]
   
-    -d <dni used in the login> *
-    -p <password in numbers>   *
-    -u <the username>          *
+    -d <dni used in the login>
+    -p <password in numbers>
+    -u <the username>
+
+    -w <phantom js with full path>
+
+    -c <config file>
+    -C              # checks the configuration and exits with a message
   
-    -f <list invests>         
-    -m <list last moves>     **
+    -f              # list invests>
+    -m              # list last moves>     **
     
-    * obligatory
     ** default
+
+    if <-d|-p|-u> is used, the program takes this argument instead of the configuration.
+    if nothing is specified, the program aborts.
+
+    If java couldn't find the path to phantomjs, this should be specified with the -w
 
 ## JAR generation
 

@@ -17,6 +17,11 @@ public class YmlConfig {
     Yaml yml = new Yaml();
     public static HashMap<String,String> configHelper = null;
 
+    private static String user = null;
+    private static String pass = null;
+    private static String dni = null;
+    private static String proxy = null;
+
     public YmlConfig(String configFile){
         File file = new File(configFile);
         try{
@@ -26,15 +31,16 @@ public class YmlConfig {
         }catch(Exception e){
             e.printStackTrace();
         }
-        this.ReadConfig();
+        this.ReadConfig(file);
 
     }
 
-    public void ReadConfig(){
-        File file = new File(configPath + "/" + fileName);
+    public void ReadConfig(File file){
+        //File file = new File(configPath + "/" + fileName);
         InputStream io = null;
         if (!file.exists() || file.isDirectory()){
-            this.GenDefaultConfig();
+            // I generate the default configuration for the given file
+            this.GenDefaultConfig(file);
             return;
         }
         try {
@@ -44,19 +50,31 @@ public class YmlConfig {
             e.printStackTrace();
         }
         this.config = (Map<String,Object>)yml.load(io);
-        this.configHelper = ((Map) config.get("Connection")).get("Proxy").toString());
-        this.configHelper = ((Map) config.get(("Bank")).get("User").toString();)
+        // this.configHelper = ((Map) config.get("Connection")).get("Proxy").toString());
+        // this.configHelper = ((Map) config.get(("Bank")).get("User").toString();)
+        proxy = (String) ((Map) config.get("Connection")).get("Proxy").toString();
+        user = (String) ((Map) config.get("Bank")).get("User").toString();
+        dni = (String) ((Map) config.get("Bank")).get("DNI").toString();
+        pass = (String) ((Map) config.get("Bank")).get("Pass").toString();
+
     }
 
+    public void GenDefaultConfig(String file){
+        File mfile = new File(file);
+        this.GenDefaultConfig(mfile);
+    }
     /**
-     * @param none
+     * @param file
      *
-     * Use this function to generate the default configuration (
+     * Use this function to generate the default configuration (to the given file)
      */
-    public void GenDefaultConfig(){
-        String content = "\n\nConnection\n\tProxy: none\n\nBank\n\tUser: <username>\n\tPass: <pass>\n\tDNI: <dni>\n\n";
+    public void GenDefaultConfig(File file){
+        String content = "\n\nConnection:\n" +
+                "    Proxy: none\n\n" +
+                "Bank:\n    User: <username>\n" +
+                "    Pass: <pass>\n    DNI: <dni>\n\n";
         try {
-            File file = new File(configPath + "/" + fileName);
+            //File file = new File(configPath + "/" + fileName);
             BufferedWriter output = null;
             output = new BufferedWriter(new FileWriter(file));
             output.write(content);
@@ -66,4 +84,11 @@ public class YmlConfig {
         }
 
     }
+
+    public String getUser(){ return user; }
+    public String getDni(){ return dni;}
+    public String getPass(){ return pass; }
+    public String getProxy(){ return proxy; }
+
+
 }
