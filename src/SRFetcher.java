@@ -91,6 +91,7 @@ public class SRFetcher {
         options.addOption("c",true,"given configfile");
         options.addOption("g",false,"generate config");
         options.addOption("w",true,"path to phantomJS");
+        options.addOption("j",false,"generate JSON output");
 
         CommandLineParser parser = new DefaultParser();
 		CommandLine cmd = null;
@@ -278,6 +279,10 @@ public class SRFetcher {
 		System.out.println("attribute href " + driver.findElement(By.xpath(lastMovesA)).getAttribute("href").toString());
 		// ((JavascriptExecutor) driver).executeScript(lastMoves);
 	}
+
+    public void generateOutput(){
+
+    }
 
 	public  String getUser() {
 		return user;
