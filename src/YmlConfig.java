@@ -2,11 +2,10 @@ import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
- * Created by matias on 02/03/15.
+ * Created by matias <matiaspalomec@gmail.co> on 02/03/15.
  */
 public class YmlConfig {
 
@@ -21,6 +20,7 @@ public class YmlConfig {
     private static String pass = null;
     private static String dni = null;
     private static String proxy = null;
+    private static String browserPath = null;
 
     public YmlConfig(String configFile){
         File file = new File(configFile);
@@ -53,6 +53,7 @@ public class YmlConfig {
         // this.configHelper = ((Map) config.get("Connection")).get("Proxy").toString());
         // this.configHelper = ((Map) config.get(("Bank")).get("User").toString();)
         proxy = (String) ((Map) config.get("Connection")).get("Proxy").toString();
+        browserPath = (String) ((Map) config.get("General")).get("Browser path").toString();
         user = (String) ((Map) config.get("Bank")).get("User").toString();
         dni = (String) ((Map) config.get("Bank")).get("DNI").toString();
         pass = (String) ((Map) config.get("Bank")).get("Pass").toString();
@@ -69,7 +70,9 @@ public class YmlConfig {
      * Use this function to generate the default configuration (to the given file)
      */
     public void GenDefaultConfig(File file){
-        String content = "\n\nConnection:\n" +
+        String content =
+                "General:\n    Browser path: /path/to/phantomjs\n\n"  +
+                "\n\nConnection:\n" +
                 "    Proxy: none\n\n" +
                 "Bank:\n    User: <username>\n" +
                 "    Pass: <pass>\n    DNI: <dni>\n\n";
@@ -82,6 +85,7 @@ public class YmlConfig {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("File generated was: " + file.getName());
 
     }
 
@@ -89,6 +93,7 @@ public class YmlConfig {
     public String getDni(){ return dni;}
     public String getPass(){ return pass; }
     public String getProxy(){ return proxy; }
+    public String getBrowserPath(){ return browserPath; }
 
 
 }

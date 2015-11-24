@@ -1,26 +1,16 @@
 /**
  * 
  */
+import org.apache.commons.cli.*;
+import org.openqa.selenium.*;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
+import org.openqa.selenium.phantomjs.PhantomJSDriverService;
+import org.openqa.selenium.remote.DesiredCapabilities;
+
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
-
-import net.sourceforge.htmlunit.corejs.javascript.tools.shell.Environment;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.phantomjs.PhantomJSDriverService;
-import org.openqa.selenium.remote.DesiredCapabilities;
 
 /**
  * @author matias
@@ -77,7 +67,7 @@ public class SRFetcher {
     }
 
 	/**
-	 * @param args
+	 * @param
 	 */
 	public static void main(String[] args) throws Exception {
 		Options options = new Options();
@@ -101,8 +91,6 @@ public class SRFetcher {
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
-        if(cmd.hasOption("w"))
-            phantomExec = cmd.getOptionValue("w");
 
         if(cmd.hasOption("c"))
             configFile = cmd.getOptionValue("c");
@@ -118,6 +106,14 @@ public class SRFetcher {
         if(user == null)
             user = cfgReal.getUser();
 
+		if(cmd.hasOption("w"))
+			phantomExec = cmd.getOptionValue("w");
+		else if (cfgReal.getBrowserPath() != null){
+			phantomExec = cfgReal.getBrowserPath();
+		}else{
+			System.out.println("3rd part, went south");
+
+		}
 
         if((user == null) || (pass == null) || (dni == null)){
             throw new Exception("Missing user|pass|dni");
