@@ -1,8 +1,12 @@
 /**
  * 
  */
+
 import org.apache.commons.cli.*;
-import org.openqa.selenium.*;
+import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -106,20 +110,20 @@ public class SRFetcher {
         if(user == null)
             user = cfgReal.getUser();
 
-		if(cmd.hasOption("w"))
-			phantomExec = cmd.getOptionValue("w");
-		else if (cfgReal.getBrowserPath() != null){
-			phantomExec = cfgReal.getBrowserPath();
-		}else{
-			System.out.println("3rd part, went south");
-
-		}
 
         if((user == null) || (pass == null) || (dni == null)){
             throw new Exception("Missing user|pass|dni");
         }
 		SRFetcher fetcher = new SRFetcher(dni,pass,user );
 
+
+        if (cmd.hasOption("w"))
+            phantomExec = cmd.getOptionValue("w");
+        else if (cfgReal.getBrowserPath() != null) {
+            phantomExec = cfgReal.getBrowserPath();
+        } else {
+            phantomExec = fetcher.findExecInPath(phantomExec);
+        }
 
 
         if(cmd.hasOption("C")){
@@ -149,17 +153,28 @@ public class SRFetcher {
         if(cmd.hasOption("a")){
             fetcher.doFetchInvest();
             fetcher.doFetchMoves();
-        }else if (flag == 0){
-			//fetcher.doFetchInvest();
+        } else if (flag == 0) {
+            //fetcher.doFetchInvest();
 			fetcher.doFetchMoves();
 		}
-		
+
 		System.out.println("About to quit");
 		fetcher.doQuit();
 		System.out.println("About to exit");
 		System.exit(0);
 
-	}
+    }
+
+    public String findExecInPath(String cmd) {
+        List<String> myPaths = Arrays.asList(System.getenv("PATH").split(":"));
+        for (String myPath : myPaths) {
+            System.err.println("myPath::" + myPath);
+            if (new File(myPath + "/" + phantomExec).exists()) {
+                return myPath + "/" + phantomExec;
+            }
+        }
+        return phantomExec;
+    }
 
     /**
      *
@@ -218,8 +233,8 @@ public class SRFetcher {
 	 * By now, this function doesn't return anything, just prints in screen the
 	 * invest name and the amount of money in it.
 	 */
-	public void doFetchInvest(){
-		this.driver.get(urlInvest);
+    public Hashtable<String, String> doFetchInvest() {
+        this.driver.get(urlInvest);
 		List<WebElement> totals = driver.findElements(By.xpath(tableInvestTotals));
 
 		List<WebElement> names = driver.findElements(By.xpath(tableInvestNames));
@@ -231,7 +246,8 @@ public class SRFetcher {
 		}
 		
 		System.out.println("Now, the final act: " + Arrays.toString(finalList.entrySet().toArray()));
-	}
+        return finalList;
+    }
 
     public static void checkConfig(){
         System.out.println("About to check the configuration");
@@ -258,16 +274,22 @@ public class SRFetcher {
 		 // close the session
 		 driver.get(insideUrl);
 		 driver.switchTo().frame("frame1");
-		 if (driver instanceof JavascriptExecutor) {
-			 ((JavascriptExecutor) driver)
+         /**
+          * I really do not know why I added this, but after executing this
+          * the program hangs and doesn go outside the if
+          if (driver instanceof JavascriptExecutor) {
+          System.out.println("ended 3.1");
+          ((JavascriptExecutor) driver)
 			 .executeAsyncScript(quitFunc);
 		 }
-		 
+          */
+
 		 this.driver.findElement(By.xpath(quitXPath)).click();
 		 this.driver.get("about:blank");
 		 this.driver.close();
-		 //System.exit(0);
-	}
+         this.driver.quit();
+         System.exit(0);
+     }
 	
 	public void lastMovements(WebDriver driver){
 		driver.get(insideUrl);;
