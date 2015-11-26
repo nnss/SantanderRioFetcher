@@ -35,8 +35,9 @@ public class SRFetcher {
 	static String tableInvestTotals = "//tbody//tbody//td[5]";
 	static String tableInvestNames = "//table[2]/tbody//table/tbody//td[1]";
 	static String tdExample = "/html/body/div[2]/table/tbody/tr[2]/td[2]/table[2]/tbody/tr[2]/td[7]";
-	
-	// path:: initPage -> lastMovesA or execScript lastMoves (try both)
+    static String acceptButton = "//*[@id=\"btn1\"]/i";
+
+    // path:: initPage -> lastMovesA or execScript lastMoves (try both)
 	static String initPage = "https://www.personas.santanderrio.com.ar/hb/html/bienvenida/fBienvenida.jsp";
 	static String lastMovesA = "/html/body/div[2]/table/tbody/tr[2]/td[2]/table/tbody/tr[2]/td[2]/map[35]/table[4]/tbody/tr[2]/td[4]/a[1]";
 	static String lastMoves = "javascript:preesCtaExt ('CU','014-189278/9');";
@@ -212,10 +213,9 @@ public class SRFetcher {
         thePass.sendKeys(this.getPass());
         WebElement theUser = driver.findElement(By.id("usuario"));
         theUser.sendKeys(this.getUser());
+        System.err.println(driver.getPageSource());
         // click the accept button
-        driver.findElement(By.xpath("/html/body/div[2]/table[2]/tbody" +
-                "/tr/td[2]/table/tbody/tr[1]/td[4]/table/tbody/tr[2]/td" +
-                "/center/table[1]/tbody/tr[4]/td/input")).click();
+        driver.findElement(By.xpath(acceptButton)).click();
 
 		/*
 		List<WebElement> frameList = driver.findElements(By.tagName("frame"));
@@ -259,6 +259,7 @@ public class SRFetcher {
             System.out.println("Given pass: '" + cfgReal.getPass() + "'");
             System.out.println("Given dni: '" + cfgReal.getDni() + "'");
             System.out.println("Given proxy: '" + cfgReal.getProxy() + "'");
+            System.out.println("Given phantomjs: '" + cfgReal.getBrowserPath() + "'");
         }else{
             System.out.println("check file: '" + configFile + "");
         }

@@ -50,14 +50,27 @@ public class YmlConfig {
             e.printStackTrace();
         }
         this.config = (Map<String,Object>)yml.load(io);
+        Object myTmpAssig = null;
         // this.configHelper = ((Map) config.get("Connection")).get("Proxy").toString());
         // this.configHelper = ((Map) config.get(("Bank")).get("User").toString();)
-        proxy = (String) ((Map) config.get("Connection")).get("Proxy").toString();
-        browserPath = (String) ((Map) config.get("General")).get("Browser path").toString();
-        user = (String) ((Map) config.get("Bank")).get("User").toString();
-        dni = (String) ((Map) config.get("Bank")).get("DNI").toString();
-        pass = (String) ((Map) config.get("Bank")).get("Pass").toString();
+        proxy = askSafely(((Map) config.get("Connection")).get("Proxy"));
+        browserPath = askSafely(((Map) config.get("General")).get("Browser path"));
+        user = askSafely(((Map) config.get("Bank")).get("User"));
+        dni = askSafely(((Map) config.get("Bank")).get("DNI"));
+        pass = askSafely(((Map) config.get("Bank")).get("Pass"));
 
+    }
+
+    public String askSafely(Object input) {
+        String ret = null;
+        if (input != null) {
+            try {
+                ret = (String) input.toString();
+            } catch (NullPointerException e) {
+                ret = null;
+            }
+        }
+        return ret;
     }
 
     public void GenDefaultConfig(String file){
@@ -72,7 +85,7 @@ public class YmlConfig {
     public void GenDefaultConfig(File file){
         String content =
                 "General:\n    Browser path: /path/to/phantomjs\n\n"  +
-                "\n\nConnection:\n" +
+                        "Connection:\n" +
                 "    Proxy: none\n\n" +
                 "Bank:\n    User: <username>\n" +
                 "    Pass: <pass>\n    DNI: <dni>\n\n";
