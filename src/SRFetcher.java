@@ -15,6 +15,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author matias
@@ -50,7 +51,9 @@ public class SRFetcher {
 	private static String pass = null;
 	private static String dni = null;
     private static String phantomExec = "phantomjs";
-	
+    private static Boolean debug = false;
+
+
 	private WebDriver driver = null;
 
 
@@ -87,6 +90,7 @@ public class SRFetcher {
         options.addOption("g",false,"generate config");
         options.addOption("w",true,"path to phantomJS");
         options.addOption("j",false,"generate JSON output");
+        options.addOption("D",false,"print debug information");
 
         CommandLineParser parser = new DefaultParser();
 		CommandLine cmd = null;
@@ -131,23 +135,31 @@ public class SRFetcher {
             SRFetcher.checkConfig();
             System.exit(0);
         }
-        System.out.println("I got phantom as: '" + phantomExec + "'");
+        if(debug)
+            System.out.println("I got phantom as: '" + phantomExec + "'");
         fetcher.initConnection();
 
         if(cmd.hasOption("g")){
             cfgReal.GenDefaultConfig(configFile);
         }
 
+        if(cmd.hasOption("D"))
+            debug = true;
+
 		int flag = 0;
+        FormatedOutput formater = new FormatedOutput( (Map<String,Object>) cfgReal.getOutputFormat());
 		if(cmd.hasOption("m")){
-			System.out.println("about to call doFetchMoves");
+			if(debug)
+                System.out.println("about to call doFetchMoves");
 			fetcher.doFetchMoves();
 			flag = 1;
 		}
 		
 		if(cmd.hasOption("f")){
-			System.out.println("about to call doFetchInvest");
+			if(debug)
+                System.out.println("about to call doFetchInvest");
 			fetcher.doFetchInvest();
+            formater.simpleArrayOutput(fetcher.doFetchInvest());
 			flag = 1;
 		}
 
@@ -159,9 +171,11 @@ public class SRFetcher {
 			fetcher.doFetchMoves();
 		}
 
-		System.out.println("About to quit");
+		if(debug)
+            System.out.println("About to quit");
 		fetcher.doQuit();
-		System.out.println("About to exit");
+		if(debug)
+            System.out.println("About to exit");
 		System.exit(0);
 
     }
@@ -197,14 +211,16 @@ public class SRFetcher {
         try{
             if(this.driver.findElement(By.xpath(loginErrorXpath)).getText().
                     matches("Para iniciar esta nueva ses.* de Online Banking debe finalizar la sesión anterior")){
-                System.err.println("RELOGIN:: a session was still opened and I'm trying to close and open it again");
+                if(debug)
+                    System.out.println("RELOGIN:: a session was still opened and I'm trying to close and open it again");
                 this.doQuit();
                 this.driver = new PhantomJSDriver();
                 this.driver.get(homeUrl);
             }
         }catch (NoSuchElementException e){
             //e.printStackTrace();
-            System.err.println("It's OK, this should be seen instead of the relogin message");
+            if(debug)
+                System.out.println("It's OK, this should be seen instead of the relogin message");
         }
 
         WebElement theID = driver.findElement(By.id("dni"));
@@ -213,7 +229,8 @@ public class SRFetcher {
         thePass.sendKeys(this.getPass());
         WebElement theUser = driver.findElement(By.id("usuario"));
         theUser.sendKeys(this.getUser());
-        System.err.println(driver.getPageSource());
+        if(debug)
+            System.err.println(driver.getPageSource());
         // click the accept button
         driver.findElement(By.xpath(acceptButton)).click();
 
@@ -245,28 +262,33 @@ public class SRFetcher {
 			}
 		}
 		
-		System.out.println("Now, the final act: " + Arrays.toString(finalList.entrySet().toArray()));
+		if (debug)
+            System.out.println("Now, the final act: " + Arrays.toString(finalList.entrySet().toArray()));
         return finalList;
     }
 
     public static void checkConfig(){
-        System.out.println("About to check the configuration");
+        if(debug)
+            System.out.println("About to check the configuration");
         File cfg = new File(configFile);
         if(cfg.exists()){
             YmlConfig cfgReal = new YmlConfig(configFile);
-            System.out.println("For config file '" + configFile.toString() + "'");
-            System.out.println("Given user: '" + cfgReal.getUser() + "'");
-            System.out.println("Given pass: '" + cfgReal.getPass() + "'");
-            System.out.println("Given dni: '" + cfgReal.getDni() + "'");
-            System.out.println("Given proxy: '" + cfgReal.getProxy() + "'");
-            System.out.println("Given phantomjs: '" + cfgReal.getBrowserPath() + "'");
+            if(debug) {
+                System.out.println("For config file '" + configFile.toString() + "'");
+                System.out.println("Given user: '" + cfgReal.getUser() + "'");
+                System.out.println("Given pass: '" + cfgReal.getPass() + "'");
+                System.out.println("Given dni: '" + cfgReal.getDni() + "'");
+                System.out.println("Given proxy: '" + cfgReal.getProxy() + "'");
+                System.out.println("Given phantomjs: '" + cfgReal.getBrowserPath() + "'");
+            }
         }else{
-            System.out.println("check file: '" + configFile + "");
+            System.err.println("check file: '" + configFile + "");
         }
     }
 	
 	public void doFetchMoves(){
-		System.out.println("inside doFetchMoves");
+		if(debug)
+            System.out.println("inside doFetchMoves");
 		this.driver.get(initPage);
 		//driver.findElement(By.xpath(lastMoves)
 	}
@@ -295,13 +317,10 @@ public class SRFetcher {
 	public void lastMovements(WebDriver driver){
 		driver.get(insideUrl);;
 		driver.switchTo().frame("frame2");
-		System.out.println("attribute href " + driver.findElement(By.xpath(lastMovesA)).getAttribute("href").toString());
+		if(debug)
+            System.out.println("attribute href " + driver.findElement(By.xpath(lastMovesA)).getAttribute("href").toString());
 		// ((JavascriptExecutor) driver).executeScript(lastMoves);
 	}
-
-    public void generateOutput(){
-
-    }
 
 	public  String getUser() {
 		return user;
