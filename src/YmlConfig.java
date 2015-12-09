@@ -24,8 +24,10 @@ public class YmlConfig {
     private static Map<String,Object> outputFormat = null;
     private static Boolean            debug        = false;
 
-    public YmlConfig(String configFile){
+
+    public YmlConfig(String configFile, Boolean myDebug){
         File file = new File(configFile);
+        debug = myDebug;
         try{
            if(!file.exists() || (file.isDirectory())){
                file = new File(configPath + "/" + fileName);

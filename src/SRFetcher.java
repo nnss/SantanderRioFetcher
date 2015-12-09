@@ -22,6 +22,14 @@ import java.util.Map;
  *
  */
 public class SRFetcher {
+    /*
+     * There are a lot of statics but as this program is not ment to be something protable and adaptable,
+     * I have to be able to configure it in case of something changes, and some parts could be implemented
+     * as statics. In a more stable version, this should be organized in (at least) two parts, the real pats
+     * that can be configured as statics (direct access to some parts of the program), and parts of the
+     * "path" to a control/page/button/whatever should be implemented directly in the code, not here as an
+     * static.
+     */
 
 	static String homeUrl = "https://www.personas.santanderrio.com.ar/hb/html/login/principal.jsp";
 	static String insideUrl = "https://www.personas.santanderrio.com.ar/hb/html/common/fInicio.jsp";
@@ -104,7 +112,7 @@ public class SRFetcher {
         if(cmd.hasOption("c"))
             configFile = cmd.getOptionValue("c");
 
-        YmlConfig cfgReal = new YmlConfig(configFile);
+        YmlConfig cfgReal = new YmlConfig(configFile,debug);
         dni = cmd.getOptionValue("d");
         pass = cmd.getOptionValue("p");
         user = cmd.getOptionValue("u");
@@ -183,7 +191,8 @@ public class SRFetcher {
     public String findExecInPath(String cmd) {
         List<String> myPaths = Arrays.asList(System.getenv("PATH").split(":"));
         for (String myPath : myPaths) {
-            System.err.println("myPath::" + myPath);
+            if (debug)
+                System.err.println("myPath::" + myPath);
             if (new File(myPath + "/" + phantomExec).exists()) {
                 return myPath + "/" + phantomExec;
             }
@@ -200,9 +209,12 @@ public class SRFetcher {
         DesiredCapabilities caps = new DesiredCapabilities();
         caps.setJavascriptEnabled(true); // enabled by default
 
+        String[] phantomArgs = new String[] { "--webdriver-loglevel=NONE" };
+
         caps.setCapability(
-                PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
-                phantomExec
+                PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY, phantomExec);
+        caps.setCapability(
+                PhantomJSDriverService.PHANTOMJS_CLI_ARGS, phantomArgs
         );
 
         this.driver = new PhantomJSDriver(caps);
@@ -272,7 +284,7 @@ public class SRFetcher {
             System.out.println("About to check the configuration");
         File cfg = new File(configFile);
         if(cfg.exists()){
-            YmlConfig cfgReal = new YmlConfig(configFile);
+            YmlConfig cfgReal = new YmlConfig(configFile,debug);
             if(debug) {
                 System.out.println("For config file '" + configFile.toString() + "'");
                 System.out.println("Given user: '" + cfgReal.getUser() + "'");
