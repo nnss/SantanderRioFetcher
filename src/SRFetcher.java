@@ -15,7 +15,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author matias
@@ -151,11 +150,14 @@ public class SRFetcher {
             cfgReal.GenDefaultConfig(configFile);
         }
 
-        if(cmd.hasOption("D"))
+        if(cmd.hasOption("D")) {
+            System.out.println("nahhhhhhhh debug::");
             debug = true;
+        }
 
 		int flag = 0;
-        FormatedOutput formater = new FormatedOutput( (Map<String,Object>) cfgReal.getOutputFormat());
+        // FormatedOutput formater = new FormatedOutput( (Map<String,Object>) cfgReal.getOutputFormat(),debug);
+        FormatedOutput formater = new FormatedOutput( cfgReal,debug);
 		if(cmd.hasOption("m")){
 			if(debug)
                 System.out.println("about to call doFetchMoves");
@@ -166,14 +168,18 @@ public class SRFetcher {
 		if(cmd.hasOption("f")){
 			if(debug)
                 System.out.println("about to call doFetchInvest");
-			fetcher.doFetchInvest();
-            formater.simpleArrayOutput(fetcher.doFetchInvest());
+			// fetcher.doFetchInvest();
+            formater.doTheOutput(fetcher.doFetchInvest());
 			flag = 1;
 		}
 
         if(cmd.hasOption("a")){
-            fetcher.doFetchInvest();
-            fetcher.doFetchMoves();
+            try {
+                formater.doTheOutput(fetcher.doFetchInvest());
+                formater.doTheOutput(fetcher.doFetchMoves());
+            }catch(Exception ex){
+                ex.printStackTrace();
+            }
         } else if (flag == 0) {
             //fetcher.doFetchInvest();
 			fetcher.doFetchMoves();
@@ -275,7 +281,7 @@ public class SRFetcher {
 		}
 		
 		if (debug)
-            System.out.println("Now, the final act: " + Arrays.toString(finalList.entrySet().toArray()));
+            System.out.println("OUTPUT::results: " + Arrays.toString(finalList.entrySet().toArray()));
         return finalList;
     }
 
@@ -297,12 +303,15 @@ public class SRFetcher {
             System.err.println("check file: '" + configFile + "");
         }
     }
-	
-	public void doFetchMoves(){
+
+    // TODO finish this part
+	public Hashtable<String,String> doFetchMoves(){
 		if(debug)
             System.out.println("inside doFetchMoves");
-		this.driver.get(initPage);
+
+		//this.driver.get(initPage);
 		//driver.findElement(By.xpath(lastMoves)
+        return null;
 	}
 	
 	 public void doQuit(){

@@ -10,8 +10,8 @@ import java.util.Map;
 public class YmlConfig {
 
     private static String configPath = System.getProperty("user.home");
-    private static String fileName   = ".bancorio_fetcher.yml"; // Yes, yes, I know, but I still buying leader jackets
-                                                               // at Cagnin 910.
+    private static String fileName   = ".bancorio_fetcher.yml";
+                // Yes, yes, I know, but I still buying leader jackets at Cagnin 910.
     private static Map<String, Object> config = null;
     Yaml yml = new Yaml();
     public static HashMap<String,String> configHelper = null;
@@ -23,6 +23,10 @@ public class YmlConfig {
     private static String             browserPath  = null;
     private static Map<String,Object> outputFormat = null;
     private static Boolean            debug        = false;
+
+    public YmlConfig(Boolean d){
+        this(configPath + File.separator + fileName,d);
+    }
 
 
     public YmlConfig(String configFile, Boolean myDebug){
@@ -96,7 +100,11 @@ public class YmlConfig {
                         "Connection:\n" +
                 "    Proxy: none\n\n" +
                 "Bank:\n    User: <username>\n" +
-                "    Pass: <pass>\n    DNI: <dni>\n\n";
+                "    Pass: <pass>\n    DNI: <dni>\n\nOutput:\n    Format: JSON\n" +
+                        "   Bank: Rio\n" +
+                        "   Method: HTTP_POST\n" +
+                        "     UR: http://www.whatever.info:333/\n" +
+                        "     Auth header: Auth header\n\n";
         try {
             //File file = new File(configPath + "/" + fileName);
             BufferedWriter output = null;
@@ -116,6 +124,8 @@ public class YmlConfig {
     public String             getProxy()       { return proxy;        }
     public String             getBrowserPath() { return browserPath;  }
     public Map<String,Object> getOutputFormat(){ return outputFormat; }
+    public Object             get(Object key)  { return config.get(key); }
+    //public Object             get(Object key)
 
 
 }
