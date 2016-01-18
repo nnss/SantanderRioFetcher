@@ -169,8 +169,12 @@ public class SRFetcher {
 			if(debug)
                 System.out.println("about to call doFetchInvest");
 			// fetcher.doFetchInvest();
-            formater.doTheOutput(fetcher.doFetchInvest());
-			flag = 1;
+            try {
+                formater.doTheOutput(fetcher.doFetchInvest());
+                flag = 1;
+            }catch(Exception ex){
+                ex.printStackTrace();
+            }
 		}
 
         if(cmd.hasOption("a")){
@@ -282,6 +286,8 @@ public class SRFetcher {
 		
 		if (debug)
             System.out.println("OUTPUT::results: " + Arrays.toString(finalList.entrySet().toArray()));
+        if(totals.toString() == "")
+            System.out.println("Fuck!");
         return finalList;
     }
 
