@@ -6,3 +6,6 @@
 
 ## Maven
 target/
+
+phantomjsdriver.log
+classes/artifacts/SantanderRioFetcher_jar/SantanderRioFetcher.jar
