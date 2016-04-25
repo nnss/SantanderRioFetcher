@@ -79,6 +79,8 @@ public class FormatedOutput {
             for (Object key : myInput.keySet() ) {
                 tmp = myInput.get(key);
                 tmp = tmp.replaceAll("\\.","").replaceAll(",",".");
+                tmp = tmp.replaceAll(" ","").replaceAll("\\$","");
+                System.out.println("DEBUG::AMOUNT::\"" + tmp.toString() +"\"");
                 myStringJson += "\"bank\" : \"" + ((Map) cfg.get("Output")).get("Bank") + "\", " +
                 "\"name\": \"" + key.toString() + "\", \"amount\": \"" + tmp + "\",";
             }

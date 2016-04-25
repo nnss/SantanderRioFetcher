@@ -3,10 +3,8 @@
  */
 
 import org.apache.commons.cli.*;
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.*;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -31,16 +29,20 @@ public class SRFetcher {
      */
 
 	static String homeUrl = "https://www.personas.santanderrio.com.ar/hb/html/login/principal.jsp";
-	static String insideUrl = "https://www.personas.santanderrio.com.ar/hb/html/common/fInicio.jsp";
-	static String quitXPath = "/html/body/table[1]/tbody/tr[2]/td/a[6]";
+	static String insideUrl = "https://www.personas.santanderrio.com.ar/hb/html/common/fInicio.jsp"; //"https://www.personas.santanderrio.com.ar/hb/html/bienvenida2/fBienvenida.jsp" ;
+    static String quitUrl = "https://www.personas.santanderrio.com.ar/hb/html/common2/toolbar.jsp";
+	static String quitXPath = "/html/body/div[2]/div[1]/div/div[2]/div[2]/a[4]"; // "/html/body/table[1]/tbody/tr[2]/td/a[6]";
+    static String quitOKXPath = "/html/body/div/div/button[1]";
+
 	static String quitFunc = "windowExit();";
     static String configFile = System.getProperty("user.home") + File.separator + ".bancorio_fetcher.yml";
 	
 	
 	// path:: urlInvest + each td2++ and td7 summed
-	static String urlInvest = "https://www.personas.santanderrio.com.ar/hb/html/inversiones/invRes.jsp";
+	static String urlInvest = "https://www.personas.santanderrio.com.ar/hb/html/inversiones/invRes.jsp" ;
 	//static String lastMoves = "/html/body/div[2]/table/tbody/tr[2]/td[2]/table/tbody/tr[2]/td[2]/map[35]/table[4]/tbody/tr[2]/td[4]/a[1]";
 	static String tableInvestTotals = "//tbody//tbody//td[5]";
+                                       // "//tbody/tr/td[2]/div/div/table[2]/tbody/tr[2]/td[5]
 	static String tableInvestNames = "//table[2]/tbody//table/tbody//td[1]";
 	static String tdExample = "/html/body/div[2]/table/tbody/tr[2]/td[2]/table[2]/tbody/tr[2]/td[7]";
     static String acceptButton = "//*[@id=\"btn1\"]/i";
@@ -151,7 +153,7 @@ public class SRFetcher {
         }
 
         if(cmd.hasOption("D")) {
-            System.out.println("nahhhhhhhh debug::");
+            System.out.println("debug::active");
             debug = true;
         }
 
@@ -252,7 +254,7 @@ public class SRFetcher {
         WebElement theUser = driver.findElement(By.id("usuario"));
         theUser.sendKeys(this.getUser());
         if(debug)
-            System.err.println(driver.getPageSource());
+            System.err.println("DEBUG::current url (after send keys)::" + driver.getCurrentUrl());
         // click the accept button
         driver.findElement(By.xpath(acceptButton)).click();
 
@@ -275,6 +277,9 @@ public class SRFetcher {
     public Hashtable<String, String> doFetchInvest() {
         this.driver.get(urlInvest);
 		List<WebElement> totals = driver.findElements(By.xpath(tableInvestTotals));
+
+        if (debug)
+            System.out.println("debug::out::page::" + driver.getCurrentUrl());
 
 		List<WebElement> names = driver.findElements(By.xpath(tableInvestNames));
 		Hashtable<String,String> finalList = new Hashtable<String,String>();
@@ -323,7 +328,7 @@ public class SRFetcher {
 	 public void doQuit(){
 		 // close the session
 		 driver.get(insideUrl);
-		 driver.switchTo().frame("frame1");
+		 //driver.switchTo().frame("frame1");
          /**
           * I really do not know why I added this, but after executing this
           * the program hangs and doesn go outside the if
@@ -333,8 +338,17 @@ public class SRFetcher {
 			 .executeAsyncScript(quitFunc);
 		 }
           */
-
-		 this.driver.findElement(By.xpath(quitXPath)).click();
+         try {
+             this.driver.findElement(By.xpath(quitXPath)).click();
+             File srcFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+             System.out.println("File:" + srcFile);
+             FileUtils.copyFile(srcFile, new File("/tmp/screenshot_.png"));
+             this.driver.switchTo().frame("trjInicial.jsp");
+             this.driver.findElement(By.xpath(quitOKXPath)).click();
+         }catch (Exception e){
+             System.err.println("getting errors, page is: " + this.driver.getCurrentUrl() + "\n---------------------------");
+             e.printStackTrace();
+         }
 		 this.driver.get("about:blank");
 		 this.driver.close();
          this.driver.quit();
