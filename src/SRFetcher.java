@@ -324,8 +324,14 @@ public class SRFetcher {
 		//driver.findElement(By.xpath(lastMoves)
         return null;
 	}
-	
-	 public void doQuit(){
+
+    public void doQuit(){
+        this.driver.get("about:blank");
+        this.driver.close();
+        this.driver.quit();
+        System.exit(0);
+    }
+	 public void doQuit2(){
 		 // close the session
 		 driver.get(insideUrl);
 		 //driver.switchTo().frame("frame1");
@@ -348,6 +354,8 @@ public class SRFetcher {
          }catch (Exception e){
              System.err.println("getting errors, page is: " + this.driver.getCurrentUrl() + "\n---------------------------");
              e.printStackTrace();
+             System.err.println("------------------------------------");
+             System.out.println(driver.getPageSource());
          }
 		 this.driver.get("about:blank");
 		 this.driver.close();
