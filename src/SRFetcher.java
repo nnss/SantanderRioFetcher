@@ -10,6 +10,7 @@ import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
@@ -41,10 +42,15 @@ public class SRFetcher {
 	// path:: urlInvest + each td2++ and td7 summed
 	static String urlInvest = "https://www.personas.santanderrio.com.ar/hb/html/inversiones/invRes.jsp" ;
 	//static String lastMoves = "/html/body/div[2]/table/tbody/tr[2]/td[2]/table/tbody/tr[2]/td[2]/map[35]/table[4]/tbody/tr[2]/td[4]/a[1]";
-	static String tableInvestTotals = "//tbody//tbody//td[5]";
-                                       // "//tbody/tr/td[2]/div/div/table[2]/tbody/tr[2]/td[5]
-	static String tableInvestNames = "//table[2]/tbody//table/tbody//td[1]";
-	static String tdExample = "/html/body/div[2]/table/tbody/tr[2]/td[2]/table[2]/tbody/tr[2]/td[7]";
+    static String tableInvestTotals = "/html/body/div[2]/table/tbody/tr/td[2]/div/div//tbody/tr[2]/td[contains(.,'$')]";
+    // /html/body/div[2]/table/tbody/tr/td[2]/div/div/table[4]/tbody/tr[2]/td[5] <ar$ (void)
+    // /html/body/div[2]/table/tbody/tr/td[2]/div/div/table[4]/tbody/tr[2]/td[6] <usd (number)
+    static String tableInvestNames = "/html/body/div[2]/table/tbody/tr/td[2]/div/div//tbody/tr[2]/td[2]/table/tbody/tr/td[1]";
+    // default"//table[2]/tbody//table/tbody//td[1]";
+    // superfondo $ /html/body/div[2]/table/tbody/tr/td[2]/div/div/table[2]/tbody/tr[2]/td[2]/table/tbody/tr/td[1]
+    // fondo USD    /html/body/div[2]/table/tbody/tr/td[2]/div/div/table[4]/tbody/tr[2]/td[2]/table/tbody/tr/td[1]
+    //              /html/body/div[2]/table/tbody/tr/td[2]/div/div/table[2]/tbody/tr[2]/td[2]/table/tbody/tr/td[1]
+    static String tdExample = "/html/body/div[2]/table/tbody/tr[2]/td[2]/table[2]/tbody/tr[2]/td[7]";
     static String acceptButton = "//*[@id=\"btn1\"]/i";
 
     // path:: initPage -> lastMovesA or execScript lastMoves (try both)
@@ -200,6 +206,25 @@ public class SRFetcher {
 
     }
 
+    public static void checkConfig() {
+        if (debug)
+            System.out.println("About to check the configuration");
+        File cfg = new File(configFile);
+        if (cfg.exists()) {
+            YmlConfig cfgReal = new YmlConfig(configFile, debug);
+            if (debug) {
+                System.out.println("For config file '" + configFile.toString() + "'");
+                System.out.println("Given user: '" + cfgReal.getUser() + "'");
+                System.out.println("Given pass: '" + cfgReal.getPass() + "'");
+                System.out.println("Given dni: '" + cfgReal.getDni() + "'");
+                System.out.println("Given proxy: '" + cfgReal.getProxy() + "'");
+                System.out.println("Given phantomjs: '" + cfgReal.getBrowserPath() + "'");
+            }
+        } else {
+            System.err.println("check file: '" + configFile + "");
+        }
+    }
+
     public String findExecInPath(String cmd) {
         List<String> myPaths = Arrays.asList(System.getenv("PATH").split(":"));
         for (String myPath : myPaths) {
@@ -267,57 +292,59 @@ public class SRFetcher {
 
     }
 
+    public String procTotalWebElement(List<WebElement> myThings) {
+        String myRet = null;
+        for (WebElement thing : myThings) {
+            if (debug)
+                System.out.println("DEBUG::procTotalWebElement::thing::" + thing.getText());
+            myRet = thing.getText().toString().replaceAll(" ", "").replaceAll("\\.", "").replaceAll(",", ".").replaceAll("\\$", "").replaceAll("US", "");
+            System.out.println("DEBUG::procTotalWebElement::myRet::" + myRet);
+            if (myRet.length() > 0) {
+                if (debug)
+                    System.out.println("DEBUG::BeforeReturn::" + myRet.toString());
+                return myRet;
+            }
+        }
+        if (debug)
+            System.out.println("DEBUG::BeforeReturnFinal::" + myRet.toString());
+        return myRet;
+    }
 
 	/**
 	 * @params
-	 * 
-	 * By now, this function doesn't return anything, just prints in screen the
+     *
+     * By now, this function doesn't return anything, just prints in screen the
 	 * invest name and the amount of money in it.
 	 */
-    public Hashtable<String, String> doFetchInvest() {
-        this.driver.get(urlInvest);
-		List<WebElement> totals = driver.findElements(By.xpath(tableInvestTotals));
+    public ArrayList<Hashtable<String, String>> doFetchInvest() {
+        driver.get(urlInvest);
+        List<WebElement> totals = driver.findElements(By.xpath(tableInvestTotals));
 
         if (debug)
-            System.out.println("debug::out::page::" + driver.getCurrentUrl());
+            System.out.println("debug::out::page::" + driver.getPageSource());
 
 		List<WebElement> names = driver.findElements(By.xpath(tableInvestNames));
-		Hashtable<String,String> finalList = new Hashtable<String,String>();
-		for ( WebElement total :  totals ){
-			for(WebElement name : names ) {
-				finalList.put(name.getText(),total.getText() );
-			}
-		}
-		
-		if (debug)
-            System.out.println("OUTPUT::results: " + Arrays.toString(finalList.entrySet().toArray()));
+        ArrayList<Hashtable<String, String>> finalList = new ArrayList<Hashtable<String, String>>();
+        int myCarry = 0;
+        for (WebElement name : names) {
+            Hashtable<String, String> temp = new Hashtable<String, String>();
+            if (debug)
+                System.out.println("debug::name::" + name.getText());
+            List<WebElement> pending = totals.subList(myCarry, 2 + myCarry);
+            myCarry += 2;
+            String t = procTotalWebElement(pending);
+            temp.put(name.getText().toString(), t);
+            finalList.add(temp);
+        }
+
         if(totals.toString() == "")
-            System.out.println("Fuck!");
+            System.out.println("ERROR");
         return finalList;
     }
 
-    public static void checkConfig(){
-        if(debug)
-            System.out.println("About to check the configuration");
-        File cfg = new File(configFile);
-        if(cfg.exists()){
-            YmlConfig cfgReal = new YmlConfig(configFile,debug);
-            if(debug) {
-                System.out.println("For config file '" + configFile.toString() + "'");
-                System.out.println("Given user: '" + cfgReal.getUser() + "'");
-                System.out.println("Given pass: '" + cfgReal.getPass() + "'");
-                System.out.println("Given dni: '" + cfgReal.getDni() + "'");
-                System.out.println("Given proxy: '" + cfgReal.getProxy() + "'");
-                System.out.println("Given phantomjs: '" + cfgReal.getBrowserPath() + "'");
-            }
-        }else{
-            System.err.println("check file: '" + configFile + "");
-        }
-    }
-
     // TODO finish this part
-	public Hashtable<String,String> doFetchMoves(){
-		if(debug)
+    public ArrayList<Hashtable<String, String>> doFetchMoves() {
+        if(debug)
             System.out.println("inside doFetchMoves");
 
 		//this.driver.get(initPage);

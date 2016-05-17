@@ -8,6 +8,8 @@ import org.json.JSONObject;
 
 import java.util.*;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Created by mlo on 11/27/15.
  */
@@ -17,17 +19,19 @@ public class FormatedOutput {
 
     public FormatedOutput(YmlConfig myConf,Boolean debug){
         cfg = (YmlConfig) myConf;
-        debug = debug;
+        this.debug = debug;
 
 
     }
 
-    public void doTheOutput(Hashtable<String,String> myInput){
+    public void doTheOutput(ArrayList<Hashtable<String, String>> myInputs) {
         if (debug)
             System.out.println("ddd:: about to process Output");
 
-        if( ((Map) cfg.get("Output")).get("Method").toString().matches("HTTP_POST") ){
-            this.httpPostMethod(myInput);
+        for (Hashtable<String, String> myInput : myInputs) {
+            if (((Map) cfg.get("Output")).get("Method").toString().matches("HTTP_POST")) {
+                this.httpPostMethod(myInput);
+            }
         }
     }
     /*
@@ -72,14 +76,16 @@ public class FormatedOutput {
             e.printStackTrace();
         }
         try{
-            System.out.println("qqq I got: " + ((Map) cfg.get("Output")).get("URL").toString() );
+            if (debug)
+                System.out.println("DEBUG::OUT I got: " + ((Map) cfg.get("Output")).get("URL").toString());
             HttpPost req = new HttpPost(  ((Map) cfg.get("Output")).get("URL").toString() );
             // {"invest": { "bank": "santander","name" : "Super Ahorro PLUS A", "amount" : "90146.22]"}}
             String myStringJson = "{\"invest\": {";
             for (Object key : myInput.keySet() ) {
-                tmp = myInput.get(key);
-                tmp = tmp.replaceAll("\\.","").replaceAll(",",".");
-                tmp = tmp.replaceAll(" ","").replaceAll("\\$","");
+                //tmp = new String(myInput.get(key),;
+                tmp = new String(myInput.get(key).getBytes(), UTF_8);
+                //tmp = tmp.replaceAll("\\.","").replaceAll(",",".");
+                //tmp = tmp.replaceAll(" ","").replaceAll("\\$","");
                 System.out.println("DEBUG::AMOUNT::\"" + tmp.toString() +"\"");
                 myStringJson += "\"bank\" : \"" + ((Map) cfg.get("Output")).get("Bank") + "\", " +
                 "\"name\": \"" + key.toString() + "\", \"amount\": \"" + tmp + "\",";
