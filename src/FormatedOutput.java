@@ -6,9 +6,8 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.util.*;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Created by mlo on 11/27/15.
@@ -79,21 +78,24 @@ public class FormatedOutput {
             if (debug)
                 System.out.println("DEBUG::OUT I got: " + ((Map) cfg.get("Output")).get("URL").toString());
             HttpPost req = new HttpPost(  ((Map) cfg.get("Output")).get("URL").toString() );
+
             // {"invest": { "bank": "santander","name" : "Super Ahorro PLUS A", "amount" : "90146.22]"}}
             String myStringJson = "{\"invest\": {";
             for (Object key : myInput.keySet() ) {
-                //tmp = new String(myInput.get(key),;
-                tmp = new String(myInput.get(key).getBytes(), UTF_8);
+                tmp = new String(myInput.get(key));
+                String safe = key.toString().replaceAll("\\xF3", "o");
+                //tmp = new String(myInput.get(key).getBytes(), UTF_8);
                 //tmp = tmp.replaceAll("\\.","").replaceAll(",",".");
                 //tmp = tmp.replaceAll(" ","").replaceAll("\\$","");
                 System.out.println("DEBUG::AMOUNT::\"" + tmp.toString() +"\"");
+                TestEncoding(safe);
                 myStringJson += "\"bank\" : \"" + ((Map) cfg.get("Output")).get("Bank") + "\", " +
-                "\"name\": \"" + key.toString() + "\", \"amount\": \"" + tmp + "\",";
+                        "\"name\": \"" + safe + "\", \"amount\": \"" + tmp + "\",";
             }
             myStringJson = myStringJson.substring(0,myStringJson.length()-1);
             myStringJson += "}}";
             StringEntity params = new StringEntity(myStringJson);
-            req.addHeader("content-type", "application/json");
+            req.addHeader("content-type", "application/json; charset=UTF-8");
             req.addHeader("Accept","application/json");
             String[] myTmpStr = null;
             for (String header : (List<String>) ((Map) cfg.get("Output")).get("Headers") ){
@@ -103,6 +105,7 @@ public class FormatedOutput {
 
             req.setEntity(params);
             HttpResponse res = httpClient.execute(req);
+
             if(debug)
                 System.out.println("response " + res.getStatusLine().toString());
 
@@ -114,6 +117,19 @@ public class FormatedOutput {
         }catch (Exception ex) {
             ex.printStackTrace();
         }
+
+    }
+
+    public void TestEncoding(String origin) {
+        byte[] myBytes = null;
+
+        try {
+            myBytes = origin.getBytes("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+
 
     }
 }
